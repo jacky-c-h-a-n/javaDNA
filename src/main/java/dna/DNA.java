@@ -1,7 +1,16 @@
 package dna;
 
+import java.util.*;
+
 public class DNA
 {
+    //original sequence from construtor
+    private String sequen;
+
+    private ArrayList<Integer> initIndex;
+    private ArrayList<Integer> midIndex;
+    private ArrayList<Integer> finaIndex;
+
     //from clear method in condtructor
     private String genes;
     private int numberJunk;
@@ -20,9 +29,10 @@ public class DNA
     private final double T = 125.107;
     private final double junk = 100.000;
 
-    //constructor - save cleared sequence
+    //constructor - save original sequence and cleared sequence
     public DNA(String sequence)
     {
+        sequen = sequence;
         String save = clearG(sequence);
         if(save.length()%3!=0)
         {
@@ -63,7 +73,7 @@ public class DNA
 
         //first codon ATG
         String init = genes.substring(0,3);
-        if(init!="ATG")
+        if(!init.equals("ATG"))
         {
             return false;
         }
@@ -94,9 +104,9 @@ public class DNA
         int numG = 0;
         int numT = 0;
         double re = 0.0;
-        for(int i=0;i<genes.length();i++)
+        for(int i=0;i<sequen.length();i++)
         {
-            String s = genes.substring(i,i+1);
+            String s = sequen.substring(i,i+1);
             if(s.equals("A"))
             {
                 numA++;
@@ -118,6 +128,7 @@ public class DNA
         numberC = numC;
         numberG = numG;
         numberT = numT;
+        clearG(sequen);
         re = Math.round((numA*A + numC*C + numG*G + numT*T + numberJunk*junk)*10.0)/10.0;
         return re;
     }
@@ -143,6 +154,142 @@ public class DNA
             return numberT;
         }
         return 0;
+    }
+
+    //create a hashset containing distinct codons, hashset doesn't save same elements twice
+    public HashSet<String> codonSet()
+    {
+        HashSet<String> re = new HashSet<String>();
+        for(int i =0; i<genes.length();i+=3)
+        {
+            String a = genes.substring(i,i+3);
+            re.add(a);
+        }
+        return re;
+    }
+
+    //locate the indexes of the target codon in the original sequence
+    public void findCodon(String targetCodon)
+    {
+        ArrayList<Integer> init = new ArrayList<Integer>();
+        ArrayList<Integer> mid = new ArrayList<Integer>();
+        ArrayList<Integer> fina = new ArrayList<Integer>();
+
+        for(int i =0;i<sequen.length();i++)
+        {
+            int index =0;
+            String a = sequen.substring(i,i+1);
+            String b = targetCodon.substring(index,index+1);
+            if(a.equals(b))
+            {
+                index++;
+                init.add(i);
+                i++;
+                while(i<sequen.length()&&index<=2)
+                {
+                    String c = sequen.substring(i,i+1);
+                    String d = targetCodon.substring(index,index+1);
+                    if(c.equals(d))
+                    {
+                        if(index==1)
+                        {
+                            mid.add(i);
+                        }
+                        if(index==2)
+                        {
+                            fina.add(i);
+                        }
+                        index++;
+                        i++;
+                    }
+                    else
+                    {
+                    i++;
+                    }
+                }
+            }
+        }
+        initIndex = init;
+        midIndex = mid;
+        finaIndex = fina;
+    }
+
+    public String replaceCodon(String originalCodon, String newCodon)
+    {
+        clearG(originalCodon);
+        if(numberJunk!=0||originalCodon.length()%3!=0)
+        {
+            return sequen;
+        }
+        clearG(newCodon);
+        if(numberJunk!=0||newCodon.length()%3!=0)
+        {
+            return sequen;
+        }
+
+        //replace codon for sequence without removing junks
+        int in = 0;
+        findCodon(originalCodon);
+        while(in<initIndex.size())
+        {
+        int index =0;
+        sequen = sequen.substring(0,initIndex.get(in)) + newCodon.substring(index,index+1) + sequen.substring(initIndex.get(in)+1);
+        index++;
+        sequen = sequen.substring(0,midIndex.get(in)) + newCodon.substring(index,index+1) + sequen.substring(midIndex.get(in)+1);
+        index++;
+        sequen = sequen.substring(0,finaIndex.get(in)) + newCodon.substring(index,index+1) + sequen.substring(finaIndex.get(in)+1);
+        in++;
+        }
+        return sequen;
+    }
+
+    //change a certain combination of codon in a sequence and remove junks
+    public String mutateCodon(String originalCodon, String newCodon)
+    {
+        clearG(originalCodon);
+        if(numberJunk!=0||originalCodon.length()%3!=0)
+        {
+            return sequen;
+        }
+        clearG(newCodon);
+        if(numberJunk!=0||newCodon.length()%3!=0)
+        {
+            return sequen;
+        }
+
+        //replace codon for clear sequence
+        for(int i =0; i<genes.length();i+=3)
+        {
+            String a = genes.substring(i,i+3);
+            if(originalCodon.equals(a))
+            {
+                genes = genes.substring(0,i) + newCodon + genes.substring(i+3);
+            }
+        }
+        sequen = genes;
+        return genes;
+    }
+
+    //return sequence
+    public String sequence()
+    {
+        return sequen;
+    }
+
+    public static void main(String[] args) {
+        DNA o = new DNA("---A****G----C---A;;G;;C");
+        o.mutateCodon("AGC", "TGA");
+        System.out.println(o.sequence());
+        DNA a = new DNA("AAAGGTTACTG+A");
+        String c = a.mutateCodon("TGA","G+T");
+        System.out.println(c);
+        System.out.println(a.totalMass());
+        HashSet<String> d = a.codonSet();
+        for(String e: d)
+        {
+            System.out.println(e);
+        }
+
     }
 }
 // TODO: Implement the DNA datatype from scratch!

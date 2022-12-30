@@ -17,7 +17,7 @@ public class PublicTests {
     @Test
     public void test2_create_checkProtein() {
         DNA dna2 = new DNA("ATGCCAACATGGATGCCCGATAT++GGATTG+A!");
-        assertTrue(dna2.isProtein());
+        assertEquals(true,dna2.isProtein());
     }
 
     @Test(expected=IllegalArgumentException.class)
@@ -51,15 +51,15 @@ public class PublicTests {
     @Test
     public void test7_mutate() {
         DNA dna7 = new DNA("AAAGGTTACTG+A");
-        dna7.mutateCodon("TGA", "GAT");
-        assertEquals("AAAGGTTACGAT", dna7.sequence());
+        dna7.mutateCodon("TGA", "GAC");
+        assertEquals("AAAGGTTACGAC", dna7.sequence());
     }
 
     @Test
     public void test8_mutate() {
-        DNA dna7 = new DNA("AAAGGTTACTG+A");
-        dna7.mutateCodon("TGA", "G+T");
-        assertEquals("AAAGGTTACTG+A", dna7.sequence());
+        DNA dna8 = new DNA("AAAGGTTACTG+A");
+        dna8.mutateCodon("TGA", "G+T");
+        assertEquals("AAAGGTTACTG+A", dna8.sequence());
     }
 
     @Test
